@@ -1,9 +1,10 @@
-const { nanoid } = require("nanoid");
+import { nanoid } from "nanoid";
+import { db } from "./database.js";
 
-const books = [];
 
 const addBookHandler = (request, h) => {
-  const {
+  try {
+     const {
     name,
     year,
     author,
@@ -47,13 +48,13 @@ const addBookHandler = (request, h) => {
     publisher,
     pageCount,
     readPage,
-    reading,
     finished,
     insertedAt,
     updatedAt,
+    reading: reading || false,
   };
 
-  books.push(newBook);
+  await db.addBook(newBook);
 
   return h
     .response({
@@ -64,12 +65,23 @@ const addBookHandler = (request, h) => {
       },
     })
     .code(201);
+  } catch (error) {
+    console.error('Gagal menambahkan buku', error);
+    return h
+    .response({
+      status: "error",
+      message: "Terjadi kesalahan pada server",
+    })
+    .code(500);
+  }
+ 
 };
 
-const getAllBooksHandler = (request, h) => {
-  const { name, reading, finished } = request.query;
+const getAllBooksHandler = async (request, h) => {
+  try {
+    const { name, reading, finished } = request.query;
 
-  let filteredBooks = books;
+  let filteredBooks = {};
 
   if (name) {
     filteredBooks = filteredBooks.filter((book) =>
@@ -87,11 +99,21 @@ const getAllBooksHandler = (request, h) => {
     filteredBooks = filteredBooks.filter((book) => book.finished === isFinished);
   }
 
-  const responseBooks = filteredBooks.map(({ id, name, publisher }) => ({
-    id,
-    name,
-    publisher,
-  }));
+  const books = await db.getAllBooks(filteredBooks);
+  const responseBooks = books.map(book => ({
+      id: book.id,
+      name: book.name,
+      year: book.year,
+      author: book.author,
+      summary: book.summary,
+      publisher: book.publisher,
+      pageCount: book.pageCount,
+      readPage: book.readPage,
+      reading: Boolean(book.reading),
+      finished: Boolean(book.finished),
+      insertedAt: book.insertedAt,
+      updatedAt: book.updatedAt,
+    }));;
 
   return h
     .response({
@@ -101,12 +123,22 @@ const getAllBooksHandler = (request, h) => {
       },
     })
     .code(200);
+  } catch (error) {
+    console.error('Gagal mendapatkan buku:', error);
+    return h
+      .response({
+        status: "error",
+        message: "Terjadi kesalahan pada server",
+      })
+      .code(500);
+  }
 };
 
-const getBookByIdHandler = (request, h) => {
-  const { bookId } = request.params;
+const getBookByIdHandler = async (request, h) => {
+  try {
+      const { bookId } = request.params;
 
-  const book = books.find((b) => b.id === bookId);
+  const book = await db.getBookById(bookId);
 
   if (!book) {
     return h
@@ -116,17 +148,42 @@ const getBookByIdHandler = (request, h) => {
       })
       .code(404);
   }
+  const responseBook = {
+      id: book.id,
+      name: book.name,
+      year: book.year,
+      author: book.author,
+      summary: book.summary,
+      publisher: book.publisher,
+      pageCount: book.pageCount,
+      readPage: book.readPage,
+      reading: Boolean(book.reading),
+      finished: Boolean(book.finished),
+      insertedAt: book.insertedAt,
+      updatedAt: book.updatedAt,
+    };
 
   return {
     status: "success",
     data: {
-      book,
+      book: responseBook,
     },
   };
+  } catch (error) {
+    console.error('Gagal mendapatkan buku berdasarkan ID:', error);
+    return h
+      .response({
+        status: "error",
+        message: "Terjadi kesalahan pada server",
+      })
+      .code(500);
+  }
+
 };
 
-const updateBookByIdHandler = (request, h) => {
-  const { bookId } = request.params;
+const updateBookByIdHandler = async (request, h) => {
+  try {
+      const { bookId } = request.params;
   const {
     name,
     year,
@@ -138,9 +195,9 @@ const updateBookByIdHandler = (request, h) => {
     reading,
   } = request.payload;
 
-  const index = books.findIndex((book) => book.id === bookId);
+  const bookExists = await db.bookExists(bookId);
 
-  if (index === -1) {
+  if (!bookExists) {
     return h
       .response({
         status: "fail",
@@ -167,36 +224,54 @@ const updateBookByIdHandler = (request, h) => {
       })
       .code(400);
   }
+  const bookData = {
+      name,
+      year,
+      author,
+      summary,
+      publisher,
+      pageCount,
+      readPage,
+      reading: reading || false,
+    };
 
-  const updatedAt = new Date().toISOString();
+    const updated = await db.updateBook(bookId, bookData);
+    
+    if (!updated) {
+      return h
+        .response({
+          status: "fail",
+          message: "Gagal memperbarui buku",
+        })
+        .code(500);
+    }
 
-  books[index] = {
-    ...books[index],
-    name,
-    year,
-    author,
-    summary,
-    publisher,
-    pageCount,
-    readPage,
-    reading,
-    updatedAt,
-  };
+    return h
+      .response({
+        status: "success",
+        message: "Buku berhasil diperbarui",
+      })
+      .code(200);
+  } catch (error) {
+    console.error('Gagal memperbarui buku:', error);
+    return h
+      .response({
+        status: "error",
+        message: "Terjadi kesalahan pada server",
+      })
+      .code(500);
+  }
 
-  return h
-    .response({
-      status: "success",
-      message: "Buku berhasil diperbarui",
-    })
-    .code(200);
+
 };
 
-const deleteBookByIdHandler = (request, h) => {
-  const { bookId } = request.params;
+const deleteBookByIdHandler = async (request, h) => {
+  try {
+      const { bookId } = request.params;
 
-  const index = books.findIndex((book) => book.id === bookId);
+   const bookExists = await db.bookExists(bookId);
 
-  if (index === -1) {
+  if (!bookExists) {
     return h
       .response({
         status: "fail",
@@ -205,7 +280,16 @@ const deleteBookByIdHandler = (request, h) => {
       .code(404);
   }
 
-  books.splice(index, 1);
+   const deleted = await db.deleteBook(bookId);
+    
+    if (!deleted) {
+      return h
+        .response({
+          status: "fail",
+          message: "Buku gagal dihapus",
+        })
+        .code(500);
+    }
 
   return h
     .response({
@@ -213,6 +297,16 @@ const deleteBookByIdHandler = (request, h) => {
       message: "Buku berhasil dihapus",
     })
     .code(200);
+  } catch (error) {
+    console.error('Error deleting book:', error);
+    return h
+      .response({
+        status: "error",
+        message: "Terjadi kesalahan pada server",
+      })
+      .code(500);
+  }
+
 };
 
 module.exports = {
