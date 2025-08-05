@@ -64,6 +64,26 @@
               <option value="0">Belum Selesai</option>
             </select>
           </div>
+          <div class="md:w-48">
+          <label class="block text-sm font-medium text-warm-700 mb-2">Kategori</label>
+          <select
+            v-model="categoryFilter"
+            class="w-full px-4 py-3 border border-warm-200 text-gray-900 rounded-lg focus:ring-2 focus:ring-warm-400 focus:border-transparent transition-all duration-200 bg-white/80"
+          >
+            <option value="">Semua</option>
+            <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+          </select>
+        </div>
+
+        <div class="md:w-48">
+          <label class="block text-sm font-medium text-warm-700 mb-2">Tahun Terbit</label>
+          <input
+            v-model="yearFilter"
+            type="number"
+            class="w-full px-4 py-3 border border-warm-200 rounded-lg text-gray-900 focus:ring-2 focus:ring-warm-400 focus:border-transparent transition-all duration-200 bg-white/80"
+            placeholder="Contoh: 2024"
+          />
+        </div>
         </div>
       </div>
 
@@ -160,36 +180,26 @@ import { ref, computed, onMounted } from 'vue'
 import BookModal from './components/BookModal.vue'
 import { bookService } from './services/bookService.js'
 
-
 const books = ref([])
+const categories = ref([])
 const searchQuery = ref('')
 const readingFilter = ref('')
 const finishedFilter = ref('')
+const categoryFilter = ref('')
+const yearFilter = ref('')
 const showAddModal = ref(false)
 const showEditModal = ref(false)
 const editingBook = ref(null)
 
-
 const filteredBooks = computed(() => {
-  let filtered = books.value
-
-  if (searchQuery.value) {
-    filtered = filtered.filter(book =>
-      book.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    )
-  }
-
-  if (readingFilter.value !== '') {
-    const isReading = readingFilter.value === '1'
-    filtered = filtered.filter(book => book.reading === isReading)
-  }
-
-  if (finishedFilter.value !== '') {
-    const isFinished = finishedFilter.value === '1'
-    filtered = filtered.filter(book => book.finished === isFinished)
-  }
-
-  return filtered
+  return books.value.filter(book => {
+    const matchesSearch = !searchQuery.value || [book.name, book.author, book.publisher].some(f => f.toLowerCase().includes(searchQuery.value.toLowerCase()))
+    const matchesReading = readingFilter.value === '' || book.reading === (readingFilter.value === '1')
+    const matchesFinished = finishedFilter.value === '' || book.finished === (finishedFilter.value === '1')
+    const matchesCategory = !categoryFilter.value || book.categoryId === categoryFilter.value
+    const matchesYear = !yearFilter.value || book.year === Number(yearFilter.value)
+    return matchesSearch && matchesReading && matchesFinished && matchesCategory && matchesYear
+  })
 })
 
 const loadBooks = async () => {
@@ -198,6 +208,15 @@ const loadBooks = async () => {
     books.value = response.data.books
   } catch (error) {
     console.error('Error loading books:', error)
+  }
+}
+
+const loadCategories = async () => {
+  try {
+    const response = await bookService.getAllCategories()
+    categories.value = response.data.categories
+  } catch (error) {
+    console.error('Error loading categories:', error)
   }
 }
 
@@ -238,7 +257,9 @@ const closeModal = () => {
   showEditModal.value = false
   editingBook.value = null
 }
+
 onMounted(() => {
   loadBooks()
+  loadCategories()
 })
 </script>
