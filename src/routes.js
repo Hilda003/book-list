@@ -1,12 +1,44 @@
 import {
+  addCategoryHandler,
+  getAllCategoriesHandler,
+  getCategoryByIdHandler,
+  updateCategoryByIdHandler,
+  deleteCategoryByIdHandler,
   addBookHandler,
   getAllBooksHandler,
   getBookByIdHandler,
   updateBookByIdHandler,
   deleteBookByIdHandler,
+  getStatsHandler,
 } from "./handler.js";
 
 const routes = [
+  {
+    method: "GET",
+    path: "/categories",
+    handler: getAllCategoriesHandler,
+  },
+  {
+    method: "GET",
+    path: "/categories/{categoryId}",
+    handler: getCategoryByIdHandler,
+  },
+  {
+    method: "POST",
+    path: "/categories",
+    handler: addCategoryHandler,
+  },
+  {
+    method: "PUT",
+    path: "/categories/{categoryId}",
+    handler: updateCategoryByIdHandler,
+  },
+  {
+    method: "DELETE",
+    path: "/categories/{categoryId}",
+    handler: deleteCategoryByIdHandler,
+  },
+
   {
     method: "GET",
     path: "/books",
@@ -31,6 +63,11 @@ const routes = [
     method: "DELETE",
     path: "/books/{bookId}",
     handler: deleteBookByIdHandler,
+  },
+  {
+    method: "GET",
+    path: "/stats",
+    handler: getStatsHandler,
   },
 ];
 

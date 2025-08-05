@@ -11,13 +11,25 @@ const setupDatabase = async () => {
 
     console.log('Connected to MySQL server');
 
-
     await connection.execute('CREATE DATABASE IF NOT EXISTS bookshelf_db');
-    console.log('✅ Database "bookshelf_db" created or already exists');
-
+    console.log('Database "bookshelf_db" created or already exists');
 
     await connection.execute('USE bookshelf_db');
-    const createTableQuery = `
+    const createCategoriesTableQuery = `
+      CREATE TABLE IF NOT EXISTS categories (
+        id VARCHAR(16) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL UNIQUE,
+        description TEXT,
+        insertedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        
+        INDEX idx_name (name)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `;
+
+    await connection.execute(createCategoriesTableQuery);
+    console.log('Table "categories" created with indexes');
+    const createBooksTableQuery = `
       CREATE TABLE IF NOT EXISTS books (
         id VARCHAR(16) PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -29,19 +41,25 @@ const setupDatabase = async () => {
         readPage INT NOT NULL DEFAULT 0,
         reading BOOLEAN NOT NULL DEFAULT FALSE,
         finished BOOLEAN NOT NULL DEFAULT FALSE,
+        categoryId VARCHAR(16),
         insertedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         
         INDEX idx_name (name),
         INDEX idx_author (author),
+        INDEX idx_publisher (publisher),
+        INDEX idx_year (year),
         INDEX idx_reading (reading),
         INDEX idx_finished (finished),
-        INDEX idx_inserted_at (insertedAt)
+        INDEX idx_category (categoryId),
+        INDEX idx_inserted_at (insertedAt),
+        
+        FOREIGN KEY (categoryId) REFERENCES categories(id) ON DELETE SET NULL
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `;
 
-    await connection.execute(createTableQuery);
-    console.log('Table "books" created with indexes');
+    await connection.execute(createBooksTableQuery);
+    console.log('Table "books" created with indexes and foreign key');
 
     const [existingBooks] = await connection.execute('SELECT COUNT(*) as count FROM books');
     
@@ -49,14 +67,14 @@ const setupDatabase = async () => {
       console.log('Menambahkan sampel buku.');
       
       for (const book of sampleBooks) {
-        const insertQuery = `
-          INSERT INTO books (id, name, year, author, summary, publisher, pageCount, readPage, reading, finished)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        const insertBookQuery = `
+          INSERT INTO books (id, name, year, author, summary, publisher, pageCount, readPage, reading, finished, categoryId)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         
-        await connection.execute(insertQuery, [
+        await connection.execute(insertBookQuery, [
           book.id, book.name, book.year, book.author, book.summary,
-          book.publisher, book.pageCount, book.readPage, book.reading, book.finished
+          book.publisher, book.pageCount, book.readPage, book.reading, book.finished, book.categoryId
         ]);
       }
       
@@ -66,6 +84,7 @@ const setupDatabase = async () => {
     }
 
     await connection.end();
+    console.log('Database setup completed successfully!');
     
   } catch (error) {
     console.error('Gagal setting database:', error);
