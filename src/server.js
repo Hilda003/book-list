@@ -14,17 +14,19 @@ const init = async () => {
       cors: {
         origin: ['*'],
             headers: ['Accept', 'Authorization', 'Content-Type', 'If-None-Match'],
-            additionalHeaders: ['cache-control', 'x-requested-with']
+            additionalHeaders: ['cache-control', 'x-requested-with'],
       },
     },
         });
-
-
     server.route(routes);
     await server.start();
     console.log(`Server running ${server.info.uri}`);
-    
+  } catch (error) {
+    console.error('Error while starting server:', error);
+    process.exit(1);
+  }
 };
+
 
 process.on('unhandledRejection', (err) => {
     console.error('Unhandled rejection:', err);
