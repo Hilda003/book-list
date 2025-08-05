@@ -1,8 +1,7 @@
 import { nanoid } from "nanoid";
 import { db } from "./database.js";
 
-
-const addBookHandler = (request, h) => {
+export const addBookHandler = async (request, h) => {
   try {
      const {
     name,
@@ -38,23 +37,22 @@ const addBookHandler = (request, h) => {
   const finished = pageCount === readPage;
   const insertedAt = new Date().toISOString();
   const updatedAt = insertedAt;
-
-  const newBook = {
-    id,
-    name,
-    year,
-    author,
-    summary,
-    publisher,
-    pageCount,
-    readPage,
+  const bookData = {
+      id,
+      name,
+      year,
+      author,
+      summary,
+      publisher,
+      pageCount,
+      readPage,
     finished,
     insertedAt,
     updatedAt,
-    reading: reading || false,
-  };
+      reading: reading || false,
+    };
 
-  await db.addBook(newBook);
+    await db.addBook(bookData);
 
   return h
     .response({
@@ -65,6 +63,7 @@ const addBookHandler = (request, h) => {
       },
     })
     .code(201);
+      
   } catch (error) {
     console.error('Gagal menambahkan buku', error);
     return h
@@ -77,29 +76,27 @@ const addBookHandler = (request, h) => {
  
 };
 
-const getAllBooksHandler = async (request, h) => {
+export const getAllBooksHandler = async (request, h) => {
   try {
     const { name, reading, finished } = request.query;
 
-  let filteredBooks = {};
-
+    const filters = {};
+    
   if (name) {
-    filteredBooks = filteredBooks.filter((book) =>
-      book.name.toLowerCase().includes(name.toLowerCase())
-    );
-  }
-
+     filters.name = name;
+    }
+    
   if (reading !== undefined) {
-    const isReading = reading === "1";
-    filteredBooks = filteredBooks.filter((book) => book.reading === isReading);
-  }
-
+      filters.reading = reading === "1";
+    }
+    
   if (finished !== undefined) {
-    const isFinished = finished === "1";
-    filteredBooks = filteredBooks.filter((book) => book.finished === isFinished);
-  }
+      filters.finished = finished === "1";
+    }
 
-  const books = await db.getAllBooks(filteredBooks);
+    const books = await db.getAllBooks(filters);
+    
+  
   const responseBooks = books.map(book => ({
       id: book.id,
       name: book.name,
@@ -113,7 +110,7 @@ const getAllBooksHandler = async (request, h) => {
       finished: Boolean(book.finished),
       insertedAt: book.insertedAt,
       updatedAt: book.updatedAt,
-    }));;
+    }));
 
   return h
     .response({
@@ -123,6 +120,7 @@ const getAllBooksHandler = async (request, h) => {
       },
     })
     .code(200);
+      
   } catch (error) {
     console.error('Gagal mendapatkan buku:', error);
     return h
@@ -134,7 +132,7 @@ const getAllBooksHandler = async (request, h) => {
   }
 };
 
-const getBookByIdHandler = async (request, h) => {
+export const getBookByIdHandler = async (request, h) => {
   try {
       const { bookId } = request.params;
 
@@ -163,12 +161,15 @@ const getBookByIdHandler = async (request, h) => {
       updatedAt: book.updatedAt,
     };
 
-  return {
+  return h
+      .response({
     status: "success",
     data: {
       book: responseBook,
     },
-  };
+      })
+      .code(200);
+      
   } catch (error) {
     console.error('Gagal mendapatkan buku berdasarkan ID:', error);
     return h
@@ -181,7 +182,7 @@ const getBookByIdHandler = async (request, h) => {
 
 };
 
-const updateBookByIdHandler = async (request, h) => {
+export const updateBookByIdHandler = async (request, h) => {
   try {
       const { bookId } = request.params;
   const {
@@ -265,9 +266,9 @@ const updateBookByIdHandler = async (request, h) => {
 
 };
 
-const deleteBookByIdHandler = async (request, h) => {
+export const deleteBookByIdHandler = async (request, h) => {
   try {
-      const { bookId } = request.params;
+    const { bookId } = request.params;
 
    const bookExists = await db.bookExists(bookId);
 
@@ -307,12 +308,4 @@ const deleteBookByIdHandler = async (request, h) => {
       .code(500);
   }
 
-};
-
-module.exports = {
-  addBookHandler,
-  getAllBooksHandler,
-  getBookByIdHandler,
-  updateBookByIdHandler,
-  deleteBookByIdHandler,
 };

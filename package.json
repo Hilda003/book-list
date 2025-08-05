@@ -22,7 +22,7 @@
     "mysql",
     "laragon"
   ],
-  "author": "Your Name",
+  "author": "Hilda",
   "license": "MIT",
   "dependencies": {
     "@hapi/hapi": "^21.3.2",
