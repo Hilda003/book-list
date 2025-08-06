@@ -1,6 +1,6 @@
 # 📚 Bookshelf App
 
-Aplikasi manajemen koleksi buku modern dengan antarmuka yang user-friendly, menggunakan warna hangat, dan font JakartaPlus. Dibangun dengan Vue.js untuk frontend dan Hapi.js untuk backend API, serta menggunakan MySQL database melalui Laragon.
+Aplikasi manajemen koleksi buku modern dengan antarmuka yang user-friendly, menggunakan warna warm, dan font JakartaPlus. Dibangun dengan Vue.js untuk frontend dan Hapi.js untuk backend API, serta menggunakan MySQL database melalui Laragon.
 
 ## ✨ Fitur
 
