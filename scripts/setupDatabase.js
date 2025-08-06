@@ -1,4 +1,3 @@
--- setupDatabase.js
 const mysql = require('mysql2/promise');
 
 const setupDatabase = async () => {
@@ -24,8 +23,7 @@ const setupDatabase = async () => {
         insertedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         
-        INDEX idx_name (name),
-        INDEX idx_inserted_at (insertedAt)
+        INDEX idx_name (name)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `;
 
@@ -53,7 +51,7 @@ const setupDatabase = async () => {
         INDEX idx_year (year),
         INDEX idx_reading (reading),
         INDEX idx_finished (finished),
-        INDEX idx_category_id (categoryId),
+        INDEX idx_category (categoryId),
         INDEX idx_inserted_at (insertedAt),
         
         FOREIGN KEY (categoryId) REFERENCES categories(id) ON DELETE SET NULL
@@ -69,12 +67,12 @@ const setupDatabase = async () => {
       console.log('Menambahkan sampel buku.');
       
       for (const book of sampleBooks) {
-        const insertQuery = `
+        const insertBookQuery = `
           INSERT INTO books (id, name, year, author, summary, publisher, pageCount, readPage, reading, finished, categoryId)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         
-        await connection.execute(insertQuery, [
+        await connection.execute(insertBookQuery, [
           book.id, book.name, book.year, book.author, book.summary,
           book.publisher, book.pageCount, book.readPage, book.reading, book.finished, book.categoryId
         ]);

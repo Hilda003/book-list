@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A modern bookshelf management application with Vue.js frontend and Hapi.js backend",
   "main": "src/server.js",
+
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "nodemon src/server.js",
@@ -25,7 +26,6 @@
   "license": "MIT",
   "dependencies": {
     "@hapi/hapi": "^21.3.2",
-    "cors": "^2.8.5",
     "mysql2": "^3.6.5",
     "nanoid": "^3.3.7",
     "vue": "^3.3.8"

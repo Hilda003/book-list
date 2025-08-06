@@ -1,4 +1,3 @@
-// routes.js
 import {
   addCategoryHandler,
   getAllCategoriesHandler,
@@ -64,6 +63,11 @@ const routes = [
     method: "DELETE",
     path: "/books/{bookId}",
     handler: deleteBookByIdHandler,
+  },
+  {
+    method: "GET",
+    path: "/stats",
+    handler: getStatsHandler,
   },
 ];
 

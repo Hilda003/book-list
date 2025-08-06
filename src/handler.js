@@ -1,4 +1,3 @@
-// handler.js
 import { nanoid } from "nanoid";
 import { db } from "./database.js";
 
@@ -141,7 +140,7 @@ export const updateCategoryByIdHandler = async (request, h) => {
 
     const categoryData = {
       name,
-      description: description || null,
+      description: description || '',
     };
 
     const updated = await db.updateCategory(categoryId, categoryData);
@@ -218,6 +217,16 @@ export const deleteCategoryByIdHandler = async (request, h) => {
       
   } catch (error) {
     console.error('Error deleting category:', error);
+    
+    if (error.message.includes('Cannot delete category')) {
+      return h
+        .response({
+          status: "fail",
+          message: "Tidak dapat menghapus kategori yang masih memiliki buku",
+        })
+        .code(400);
+    }
+    
     return h
       .response({
         status: "error",
@@ -318,7 +327,7 @@ export const addBookHandler = async (request, h) => {
 
 export const getAllBooksHandler = async (request, h) => {
   try {
-    const { name, reading, finished, categoryId, year, yearFrom, yearTo } = request.query;
+    const { name, reading, finished, categoryId, year } = request.query;
 
     const filters = {};
     
@@ -340,14 +349,6 @@ export const getAllBooksHandler = async (request, h) => {
     
     if (year) {
       filters.year = parseInt(year);
-    }
-    
-    if (yearFrom) {
-      filters.yearFrom = parseInt(yearFrom);
-    }
-    
-    if (yearTo) {
-      filters.yearTo = parseInt(yearTo);
     }
 
     const books = await db.getAllBooks(filters);
@@ -544,7 +545,7 @@ export const deleteBookByIdHandler = async (request, h) => {
   try {
     const { bookId } = request.params;
 
-    const bookExists = await db.bookExists(bookId);
+   const bookExists = await db.bookExists(bookId);
 
   if (!bookExists) {
     return h

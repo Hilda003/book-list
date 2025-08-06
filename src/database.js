@@ -1,4 +1,3 @@
-// database.js
 import mysql from 'mysql2/promise';
 
 const dbConfig = {
@@ -20,7 +19,6 @@ export const initDatabase = async () => {
     await connection.query(`CREATE DATABASE IF NOT EXISTS bookshelf_db`);
     await connection.query(`USE bookshelf_db`);
     
-    // Categories table
     const createCategoriesTableQuery = `
       CREATE TABLE IF NOT EXISTS categories (
         id VARCHAR(16) PRIMARY KEY,
@@ -32,8 +30,7 @@ export const initDatabase = async () => {
     `;
     
     await connection.query(createCategoriesTableQuery);
-    
-    // Books table with category reference
+
     const createBooksTableQuery = `
       CREATE TABLE IF NOT EXISTS books (
         id VARCHAR(16) PRIMARY KEY,
@@ -49,6 +46,7 @@ export const initDatabase = async () => {
         categoryId VARCHAR(16),
         insertedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        
         FOREIGN KEY (categoryId) REFERENCES categories(id) ON DELETE SET NULL
       )
     `;
@@ -64,7 +62,6 @@ export const initDatabase = async () => {
 };
 
 export const db = {
-  // Category operations
   async getAllCategories() {
     const [rows] = await pool.execute('SELECT * FROM categories ORDER BY name ASC');
     return rows;
@@ -105,7 +102,12 @@ export const db = {
   },
 
   async deleteCategory(id) {
-    await pool.execute('UPDATE books SET categoryId = NULL WHERE categoryId = ?', [id]);
+    // Check if category has books
+    const [bookCount] = await pool.execute('SELECT COUNT(*) as count FROM books WHERE categoryId = ?', [id]);
+    
+    if (bookCount[0].count > 0) {
+      throw new Error('Cannot delete category that has books assigned to it');
+    }
     
     const [result] = await pool.execute('DELETE FROM categories WHERE id = ?', [id]);
     return result.affectedRows > 0;
@@ -116,7 +118,6 @@ export const db = {
     return rows[0].count > 0;
   },
 
-  // Book operations (updated)
   async getAllBooks(filters = {}) {
     let query = `
       SELECT b.*, c.name as categoryName 
@@ -150,16 +151,6 @@ export const db = {
     if (filters.year) {
       query += ' AND b.year = ?';
       params.push(filters.year);
-    }
-    
-    if (filters.yearFrom) {
-      query += ' AND b.year >= ?';
-      params.push(filters.yearFrom);
-    }
-    
-    if (filters.yearTo) {
-      query += ' AND b.year <= ?';
-      params.push(filters.yearTo);
     }
     
     query += ' ORDER BY b.insertedAt DESC';
@@ -219,6 +210,19 @@ export const db = {
   async bookExists(id) {
     const [rows] = await pool.execute('SELECT COUNT(*) as count FROM books WHERE id = ?', [id]);
     return rows[0].count > 0;
+  },
+  async getBookStats() {
+    const [totalBooks] = await pool.execute('SELECT COUNT(*) as count FROM books');
+    const [readingBooks] = await pool.execute('SELECT COUNT(*) as count FROM books WHERE reading = true');
+    const [finishedBooks] = await pool.execute('SELECT COUNT(*) as count FROM books WHERE finished = true');
+    const [totalCategories] = await pool.execute('SELECT COUNT(*) as count FROM categories');
+    
+    return {
+      totalBooks: totalBooks[0].count,
+      readingBooks: readingBooks[0].count,
+      finishedBooks: finishedBooks[0].count,
+      totalCategories: totalCategories[0].count
+    };
   }
 };
 
