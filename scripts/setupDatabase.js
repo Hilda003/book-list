@@ -41,7 +41,6 @@ const setupDatabase = async () => {
         readPage INT NOT NULL DEFAULT 0,
         reading BOOLEAN NOT NULL DEFAULT FALSE,
         finished BOOLEAN NOT NULL DEFAULT FALSE,
-        categoryId VARCHAR(16),
         insertedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         
