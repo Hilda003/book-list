@@ -1,6 +1,7 @@
 <template>
   <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden">
+      <!-- Header -->
       <div class="bg-gradient-to-r from-warm-500 to-warm-600 px-8 py-6 text-white">
         <h2 class="text-2xl font-bold">
           {{ isEditing ? 'Edit Buku' : 'Tambah Buku Baru' }}

@@ -9,9 +9,11 @@ import {
   getBookByIdHandler,
   updateBookByIdHandler,
   deleteBookByIdHandler,
+  getStatsHandler,
 } from "./handler.js";
 
 const routes = [
+  // Category routes
   {
     method: "GET",
     path: "/categories",
@@ -62,6 +64,11 @@ const routes = [
     method: "DELETE",
     path: "/books/{bookId}",
     handler: deleteBookByIdHandler,
+  },
+  {
+    method: "GET",
+    path: "/stats",
+    handler: getStatsHandler,
   },
 ];
 

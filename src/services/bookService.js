@@ -150,6 +150,8 @@ class BookService {
     
     return result
   }
+
+  // Statistics method
   async getStats() {
     const response = await fetch(`${API_BASE_URL}/stats`)
     

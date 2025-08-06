@@ -54,6 +54,34 @@ export const addCategoryHandler = async (request, h) => {
   }
 };
 
+export const getStatsHandler = async (request, h) => {
+  try {
+    const stats = await db.getBookStats();
+    
+    return h
+      .response({
+        status: "success",
+        data: {
+          stats,
+        },
+      })
+      .code(200);
+      
+  } catch (error) {
+    console.error('Gagal mendapatkan statistik:', error);
+    return h
+      .response({
+        status: "error",
+        message: "Terjadi kesalahan pada server",
+      })
+      .code(500);
+  }
+};
+      })
+      .code(500);
+  }
+};
+
 export const getAllCategoriesHandler = async (request, h) => {
   try {
     const categories = await db.getAllCategories();
