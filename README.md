@@ -7,7 +7,6 @@ Aplikasi manajemen koleksi buku modern dengan antarmuka yang user-friendly, meng
 - 📖 **Manajemen Buku Lengkap**: Tambah, edit, hapus, dan lihat detail buku
 - 🔍 **Pencarian & Filter**: Cari berdasarkan nama buku dan filter berdasarkan status baca
 - 📊 **Progress Tracking**: Lacak progres baca dengan visual progress bar
-- 🎨 **UI Modern**: Desain dengan warna hangat dan font JakartaPlus yang elegan
 - 📱 **Responsive Design**: Tampilan optimal di desktop, tablet, dan mobile
 - 🗄️ **Database MySQL**: Penyimpanan data dengan MySQL melalui Laragon
 
@@ -115,23 +114,38 @@ bookshelf-app/
 
 ```json
 {
-  "name": "Nama Buku",
-  "year": 2024,
-  "author": "Nama Penulis",
-  "summary": "Ringkasan buku...",
-  "publisher": "Nama Penerbit",
-  "pageCount": 300,
-  "readPage": 150,
-  "reading": true
+  "name": "Atomic Habits",
+  "year": 2018,
+  "author": "James Clear",
+  "summary": "A guide to building good habits",
+  "publisher": "Penguin",
+  "pageCount": 320,
+  "readPage": 100,
+  "reading": true,
+  "categoryId": "Non-Fiksi"
 }
 ```
 
-## 🎨 Design System
+### Categories API
+| Method | Endpoint           | Description           |
+| ------ | ------------------ | --------------------- |
+| GET    | `/categories`      | Get all categories    |
+| GET    | `/categories/{id}` | Get category by ID    |
+| POST   | `/categories`      | Create a new category |
+| PUT    | `/categories/{id}` | Update category by ID |
+| DELETE | `/categories/{id}` | Delete category by ID |
 
-### Warna Hangat (Warm Palette)
-- **Primary**: Orange tones (#f97316, #ea580c)
-- **Background**: Cream gradients (#fefdf9, #fef7ed)
-- **Accent**: Warm orange variations
+### Request Body untuk POST/PUT
+
+```json
+{
+  "name": "Fiction",
+  "description": "Books related to fictional stories"
+}
+
+```
+
+## 🎨 Design System
 
 ### Typography
 - **Font**: Plus Jakarta Sans
@@ -149,20 +163,21 @@ bookshelf-app/
 
 ### Tabel: `books`
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | VARCHAR(16) | Primary key, unique identifier |
-| `name` | VARCHAR(255) | Nama buku |
-| `year` | INT | Tahun terbit |
-| `author` | VARCHAR(255) | Nama penulis |
-| `summary` | TEXT | Ringkasan buku |
-| `publisher` | VARCHAR(255) | Nama penerbit |
-| `pageCount` | INT | Total halaman |
-| `readPage` | INT | Halaman yang sudah dibaca |
-| `reading` | BOOLEAN | Status sedang dibaca |
-| `finished` | BOOLEAN | Status selesai dibaca (auto-calculated) |
-| `insertedAt` | TIMESTAMP | Waktu ditambahkan |
-| `updatedAt` | TIMESTAMP | Waktu terakhir diupdate |
+| Field      | Type         | Description           |
+| ---------- | ------------ | --------------------- |
+| id         | VARCHAR(16)  | Primary key (UUID)    |
+| name       | VARCHAR(255) | Book title            |
+| year       | INT          | Year of publication   |
+| author     | VARCHAR(255) | Author of the book    |
+| summary    | TEXT         | Short description     |
+| publisher  | VARCHAR(255) | Book publisher        |
+| pageCount  | INT          | Total pages           |
+| readPage   | INT          | Pages read            |
+| reading    | BOOLEAN      | Reading status        |
+| finished   | BOOLEAN      | Finished status       |
+| categoryId | VARCHAR(16)  | FK to `categories.id` |
+| insertedAt | TIMESTAMP    | Auto insert timestamp |
+| updatedAt  | TIMESTAMP    | Auto update timestamp |
 
 ### Indexes
 - `idx_name` - Index pada kolom name untuk pencarian cepat
@@ -170,6 +185,16 @@ bookshelf-app/
 - `idx_reading` - Index pada kolom reading untuk filter
 - `idx_finished` - Index pada kolom finished untuk filter
 - `idx_inserted_at` - Index pada kolom insertedAt untuk sorting
+  
+### Tabel: `categories`
+| Field       | Type         | Description           |
+| ----------- | ------------ | --------------------- |
+| id          | VARCHAR(16)  | Primary key (UUID)    |
+| name        | VARCHAR(255) | Unique category name  |
+| description | TEXT         | Category description  |
+| insertedAt  | TIMESTAMP    | Auto insert timestamp |
+| updatedAt   | TIMESTAMP    | Auto update timestamp |
+
 
 ## 🔧 Scripts NPM
 
@@ -212,6 +237,15 @@ npm run setup:db        # Setup database dan sample data
 4. Push ke branch (`git push origin feature/amazing-feature`)
 5. Buat Pull Request
 
+
+### Preview
+<img width="1901" height="903" alt="image" src="https://github.com/user-attachments/assets/dac26926-46d3-4909-94b1-8ab5a81f58ef" />
+<img width="1896" height="916" alt="image" src="https://github.com/user-attachments/assets/6fa8034b-74bd-467f-ac15-e9e863b40734" />
+<img width="1910" height="900" alt="image" src="https://github.com/user-attachments/assets/4167abe0-a541-416d-92bc-60babb42513f" />
+
+
+
+
 ## 📝 License
 
 Project ini menggunakan MIT License. Lihat file `LICENSE` untuk detail.
@@ -230,6 +264,9 @@ git clone <repo-url> && cd bookshelf-app && npm install
 
 # Setup Database
 npm run setup:db
+
+# Run Server
+node src/server.js
 
 # Run Development
 npm run dev
