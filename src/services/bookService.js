@@ -1,6 +1,8 @@
+// services/bookService.js
 const API_BASE_URL = 'http://localhost:9000'
 
 class BookService {
+  // Category methods
   async getAllCategories() {
     const response = await fetch(`${API_BASE_URL}/categories`)
     
@@ -70,6 +72,8 @@ class BookService {
     
     return result
   }
+
+  // Book methods (updated)
   async getAllBooks(filters = {}) {
     const params = new URLSearchParams()
     
@@ -78,6 +82,8 @@ class BookService {
     if (filters.finished !== undefined) params.append('finished', filters.finished)
     if (filters.categoryId) params.append('categoryId', filters.categoryId)
     if (filters.year) params.append('year', filters.year)
+    if (filters.yearFrom) params.append('yearFrom', filters.yearFrom)
+    if (filters.yearTo) params.append('yearTo', filters.yearTo)
     
     const queryString = params.toString()
     const url = `${API_BASE_URL}/books${queryString ? `?${queryString}` : ''}`
@@ -149,15 +155,6 @@ class BookService {
     }
     
     return result
-  }
-  async getStats() {
-    const response = await fetch(`${API_BASE_URL}/stats`)
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-    
-    return await response.json()
   }
 }
 
