@@ -58,10 +58,10 @@ Aplikasi manajemen koleksi buku modern dengan antarmuka yang user-friendly, meng
    ```bash
    npm run setup:db
    ```
-   Script ini akan:
-   - Membuat database `bookshelf_db`
-   - Membuat tabel `books` dengan indexes
-   - Insert sample data (3 buku contoh)
+5. **Jalankan Server**
+   ```bash
+   node src/server.js
+   ```
 
 5. **Jalankan aplikasi**
    ```bash
